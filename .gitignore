@@ -24,6 +24,9 @@ pnpm-debug.log*
 .env.test.local
 .env.production.local
 
+# Allow .env.example template
+!.env.example
+
 ## Editor/IDE
 .vscode/
 .idea/
