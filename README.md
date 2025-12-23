@@ -1,97 +1,253 @@
-# HeyBabyy - Parent Pal Plus
+#### HeyBabyy
+### An AI-Powered Companion for Newborn Care & Parent Well-Being
 
-## Project Overview
+HeyBabyy is an AI-driven web platform designed to support new parents during a baby’s first 1000 days—the most critical phase for physical, cognitive, and emotional development.
+The platform blends rule-based intelligence, AI assistance, and trusted medical guidelines to simplify newborn care, reduce parental anxiety, and enable informed decision-making.
 
-A comprehensive parent support application built with React, TypeScript, and modern web technologies.
+ ## Finalist — GE Healthcare Precision Challenge 2025
 
-## How to edit this code
+ ### Why HeyBabyy?
 
-There are several ways of editing your application.
+New parents often face:
 
-**Use your preferred IDE**
+Information overload from unreliable sources
 
-Clone this repo and push changes using your favorite IDE.
+Difficulty tracking growth, nutrition, and milestones
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Missed vaccinations and health follow-ups
 
-Follow these steps:
+Lack of immediate, contextual guidance
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+HeyBabyy addresses these gaps through a single, unified dashboard powered by AI-assisted insights and medically grounded rules.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+###  Core AI & Intelligence Features
+## 1. Tiny – AI Voice & Chat Assistant
 
-# Step 3: Install the necessary dependencies.
-npm i
+Conversational assistant available on the home page
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Multilingual (English / Hindi)
 
-**Edit a file directly in GitHub**
+Supports both text and voice
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Provides contextual guidance on:
 
-**Use GitHub Codespaces**
+Sleep patterns
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Feeding basics
 
-## What technologies are used for this project?
+Colic & hygiene
 
-This project is built with:
+Designed with safety-first prompts and medical disclaimers
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Informational only — not a replacement for professional medical advice.
 
-## Environment configuration
+## 2. Growth Monitor (Rule-Based + Analytics Ready)
 
-Copy `.env.example` to `.env.local` and adjust values:
+Input baby’s:
 
-```
-VITE_API_BASE_URL=http://localhost:8000
-VITE_DEMO_AUTH=true
-```
+Age (months)
 
-- Set `VITE_DEMO_AUTH=true` to run without a backend (demo login)
-- Set `VITE_DEMO_AUTH=false` and point `VITE_API_BASE_URL` to your Django/FastAPI server when ready
+Weight (kg)
 
-## Backend quick start
+Length (cm)
 
-This frontend expects these routes:
+Gender
 
-- `POST /api/auth/login/` { email, password } -> { access, user }
-- `POST /api/auth/register/` { email, password, full_name }
-- `GET  /api/auth/me/` -> { id, email, full_name }
-- `POST /api/auth/logout/`
+Uses a WHO-style LMS growth model (demo implementation) to calculate:
 
-Starter skeletons are available under `backend/`:
-- `backend/fastapi/` minimal FastAPI app (`main.py`)
-- `backend/django/` minimal Django views and urls (replace with DRF + SimpleJWT for production)
+Z-score
 
-## How can I deploy this project?
+Percentile
 
-You can deploy this project using various platforms:
-- **Vercel**: Connect your GitHub repo and deploy
-- **Netlify**: Connect your GitHub repo and deploy
-- **Railway**: Deploy full-stack with backend support
-- **AWS/Azure**: Deploy to cloud platforms
+Visual sparkline for recent growth trends
 
-Build the project first:
-```sh
-npm run build
-```
+Detects abnormal growth drift using rule-based thresholds
 
-## Custom Domain
+Designed to later integrate full WHO LMS datasets
 
-You can connect a custom domain through your hosting provider's dashboard (Vercel, Netlify, etc.).
+## 3. Nutrition Tracker
+
+Two logging modes:
+
+Quick free-text logs
+Example: “3am 90ml formula, 6 wet diapers”
+
+Structured entry (feed type, quantity, diapers, stool count)
+
+Rule-based intelligence:
+
+Alerts if solids are logged before 6 months
+
+Hydration warnings if diaper count is low
+
+Nutrition tips based on age
+
+Auto-generated daily summaries:
+
+Total intake
+
+Wet diapers
+
+Stool frequency
+
+Designed for seamless transition to ML-based parsing later
+
+## 4. Visual Lab – AI Rash Advisor (Beta)
+
+Drag-and-drop / click / paste image upload
+
+Images stored securely via Supabase Storage
+
+AI suggestion pipeline (MVP):
+
+Rule-based analysis with safety prompts
+
+Non-diagnostic guidance (e.g., heat rash, diaper rash)
+
+Recent uploads gallery for quick comparison
+
+Architecture ready for future computer vision models
+
+## 5. Nearby Care Services
+
+Location-based discovery of:
+
+Pediatricians
+
+Vaccination centers
+
+Lactation consultants
+
+Blood banks
+
+Creches & preschools
+
+Google Maps / Places integration
+
+Distance-aware and rating-aware listing
+
+Designed to move from client-side MVP → secure backend proxy
+
+##  Baby Dashboard (Services → Dashboard)
+
+A full-screen unified dashboard that brings together:
+
+Growth Monitor
+
+Nutrition Tracker
+
+Dashboard Highlights
+
+Clean, distraction-free UI
+
+Live calculations and instant feedback
+
+Demo data buttons for quick onboarding
+
+Modular cards — easy to extend with:
+
+Vaccination planner
+
+Sleep tracking
+
+Developmental milestone checks
+
+# Tech Stack
+Frontend
+
+Next.js (App Router)
+
+TypeScript
+
+Tailwind CSS
+
+Responsive, accessible UI with soft gradient theme
+
+Backend (MVP)
+
+Next.js API Routes
+
+Rule-based computation for growth & nutrition
+
+Clean separation between UI and logic
+
+Storage & Auth
+
+Supabase
+
+File storage (Visual Lab uploads)
+
+Ready for user auth & data persistence
+
+AI & Intelligence
+
+Rule-based engines (MVP)
+
+AI-ready architecture:
+
+RAG for Tiny chatbot
+
+Computer Vision for rash analysis
+
+NLP parsing for nutrition logs
+
+# Privacy & Safety by Design
+
+No medical diagnosis claims
+
+Explicit disclaimers across AI features
+
+Minimal data collection in MVP
+
+Architecture aligned for future HIPAA/GDPR-aware design
+
+Secure storage via Supabase
+
+ Project Status
+
+Functional MVP
+
+ End-to-end demo ready
+
+ Modular, scalable architecture
+
+ Advanced ML models planned (post-MVP)
+
+ Recognition
+
+Finalist – GE Healthcare Precision Challenge 2025
+
+Recognized for applying AI to real-world healthcare and early-life well-being
+
+Evaluated on innovation, feasibility, and social impact
+
+ Roadmap
+
+Full WHO LMS integration
+
+Vaccination scheduler with reminders
+
+Advanced RAG-based medical knowledge assistant
+
+Offline-first mobile app
+
+Pediatrician & hospital partnerships
+
+ Team & Vision
+
+HeyBabyy is built with the vision of human-centric AI in healthcare, focusing on:
+Trust
+
+Simplicity
+
+Safety
+
+Real-world usability for families
+
+Trust
+
+Simplicity
+
+Safety
+
+Real-world usability for families
