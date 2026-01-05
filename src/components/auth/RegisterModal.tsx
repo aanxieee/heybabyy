@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/ApiAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { Sparkles } from 'lucide-react';
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface RegisterModalProps {
 export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [step, setStep] = useState<'parent' | 'baby'>('parent');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoData, setIsDemoData] = useState(false);
   
   const [parentDetails, setParentDetails] = useState({
     motherName: '',
@@ -49,6 +52,53 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
 
   const { signUp } = useAuth();
   const { toast } = useToast();
+
+  const fillDemoParentData = () => {
+    setParentDetails({
+      motherName: 'Sarah Johnson',
+      fatherName: 'Michael Johnson',
+      motherEmail: 'sarah.johnson@example.com',
+      fatherEmail: 'michael.johnson@example.com',
+      motherDob: '1990-05-15',
+      fatherDob: '1988-08-22',
+      motherHealthHistory: 'No known allergies. Regular checkups completed.',
+      fatherHealthHistory: 'Mild asthma. Annual checkups completed.',
+      motherBloodGroup: 'A+',
+      fatherBloodGroup: 'B+',
+      mobileNumber: '9876543210',
+      location: 'Mumbai, Maharashtra',
+      doctorPrescription: 'Regular prenatal vitamins recommended.',
+    });
+    setIsDemoData(true);
+    toast({
+      title: "✨ Demo Data Filled!",
+      description: "All parent fields have been filled with sample data.",
+    });
+  };
+
+  const fillDemoBabyData = () => {
+    const today = new Date();
+    const babyDob = new Date(today.getFullYear(), today.getMonth() - 6, 15); // 6 months old
+    const dobString = babyDob.toISOString().split('T')[0];
+    
+    setBabyDetails({
+      name: 'Emma Johnson',
+      dob: dobString,
+      birthTime: '08:30',
+      height: '65',
+      weight: '7.5',
+      eyesight: 'Normal',
+      bloodGroup: 'A+',
+      vaccinationRecord: 'BCG, Hepatitis B completed',
+      gender: 'female',
+      siblingData: 'First child',
+    });
+    setIsDemoData(true);
+    toast({
+      title: "✨ Demo Data Filled!",
+      description: "All baby fields have been filled with sample data.",
+    });
+  };
 
   const handleParentSubmit = () => {
     if (!parentDetails.motherName || !parentDetails.fatherName || !parentDetails.mobileNumber) {
@@ -91,7 +141,9 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
     if (!error) {
       toast({
         title: "Success",
-        description: "Registration successful! You are now logged in.",
+        description: isDemoData 
+          ? "🎉 Demo Registration successful! You are now logged in with demo data."
+          : "Registration successful! You are now logged in.",
       });
       onClose();
       resetForm();
@@ -107,6 +159,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
 
   const resetForm = () => {
     setStep('parent');
+    setIsDemoData(false);
     setParentDetails({
       motherName: '',
       fatherName: '',
@@ -142,11 +195,34 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
         <DialogHeader>
           <DialogTitle className="text-center gradient-text">
             Register with HeyBabyy - {step === 'parent' ? 'Parent Details' : 'Baby Details'}
+            {isDemoData && (
+              <Badge variant="secondary" className="ml-2">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Demo Data
+              </Badge>
+            )}
           </DialogTitle>
         </DialogHeader>
         
         {step === 'parent' ? (
           <div className="space-y-4">
+            {/* Demo Fill Button for Parent Details */}
+            <div className="p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Quick Demo Fill</span>
+                </div>
+                <Button 
+                  onClick={fillDemoParentData} 
+                  size="sm"
+                  variant="secondary"
+                >
+                  Fill Demo Data
+                </Button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="motherName">Mother's Name *</Label>
@@ -281,6 +357,23 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Demo Fill Button for Baby Details */}
+            <div className="p-3 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border border-primary/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Quick Demo Fill</span>
+                </div>
+                <Button 
+                  onClick={fillDemoBabyData} 
+                  size="sm"
+                  variant="secondary"
+                >
+                  Fill Demo Data
+                </Button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="babyName">Baby's Name *</Label>
