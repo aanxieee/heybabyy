@@ -19,7 +19,8 @@ const Auth = () => {
   const { signIn, signUp, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  const DEMO_EMAIL = 'demo.user@example.com';
+  const DEMO_MOBILE = '9876543210';
+  const DEMO_EMAIL = `${DEMO_MOBILE}@demo.com`;
   const DEMO_PASSWORD = 'demo123';
   const DEMO_NAME = 'Demo User';
   const DEMO_OTP = '123456';
