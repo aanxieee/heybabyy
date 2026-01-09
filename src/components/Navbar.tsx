@@ -12,10 +12,9 @@ import { cn } from '@/lib/utils';
 
 interface NavbarProps {
   activeSection?: string;
-  onNavClick?: (section: string) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
+const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showProductsDropdown, setShowProductsDropdown] = useState(false);
