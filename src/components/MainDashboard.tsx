@@ -6,6 +6,7 @@ import { LoginModal } from "@/components/auth/LoginModal";
 import { RegisterModal } from "@/components/auth/RegisterModal";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import TinyBot from "@/components/TinyBot";
 
 interface Language {
   code: string;
@@ -187,58 +188,7 @@ const MainDashboard = ({ selectedLanguage }: MainDashboardProps) => {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-8 max-w-4xl mx-auto">
             {/* TinyBot Assistant Card */}
-            <div className="bubble p-8">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <Baby className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-primary">{t('tinybotAssistant')}</h2>
-                  <p className="text-muted-foreground">
-                    {isAuthenticated 
-                      ? `${t('hello')} ${user?.full_name || 'User'}! ${t('helpWithBaby')}`
-                      : t('aiCompanion')
-                    }
-                  </p>
-                </div>
-              </div>
-              
-              {/* Welcome Message */}
-              <div className="bg-gradient-subtle p-4 rounded-xl mb-6">
-                <p className="text-foreground">
-                  👋 {isAuthenticated ? `${t('welcomeBack')}!` : `${t('hello')}!`} {t('welcomeMessage')}
-                </p>
-              </div>
-
-              {/* Quick Suggestions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                {[
-                  t('feedingSchedule'),
-                  t('sleepRoutines'),
-                  t('vaccination'),
-                  t('milestones')
-                ].map((suggestion, index) => (
-                  <button
-                    key={index}
-                    className="p-3 text-left bg-white/50 rounded-lg border border-border hover:shadow-soft transition-all duration-200 text-sm"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-
-              {/* Chat Input */}
-              <div className="flex space-x-3">
-                <input
-                  type="text"
-                  placeholder={t('chatPlaceholder')}
-                  className="flex-1 p-3 rounded-lg border border-border bg-white/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <TinyBot />
 
             {/* FAQs Section */}
             <section id="faqs" className="bubble p-8 space-y-6">

@@ -66,7 +66,16 @@ You can use these credentials immediately without registration.
 #### API Endpoints Available
 - `POST /api/auth/register/` - Register new user
 - `POST /api/auth/login/` - Login user
+- `POST /api/chat/` - Chat with TinyBot (Azure OpenAI)
+- `GET /api/chat/health/` - Check Azure OpenAI configuration
 - API docs: http://localhost:8000/docs
+
+#### TinyBot Azure OpenAI Setup
+The backend uses Azure OpenAI for the TinyBot chat feature. Configuration is in `backend/fastapi/.env`:
+- `AZURE_OPENAI_ENDPOINT` - Your Azure OpenAI endpoint
+- `AZURE_OPENAI_API_KEY` - Your API key
+- `AZURE_OPENAI_DEPLOYMENT_NAME` - Deployment name (e.g., o4-mini)
+- `AZURE_OPENAI_API_VERSION` - API version
 
 ### Option 3: Django Backend
 See `backend/django/README.md` for Django setup instructions.

@@ -1,9 +1,47 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from contextlib import asynccontextmanager
 import time
+import os
+import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Azure OpenAI Configuration
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "https://heybabyy.openai.azure.com/")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "")
+AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "o4-mini")
+AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+
+# TinyBot system prompt for baby care assistant
+TINYBOT_SYSTEM_PROMPT = """You are TinyBot, a friendly and knowledgeable AI assistant for HeyBabyy app. 
+You specialize in baby care guidance for parents of infants (0-24 months).
+
+Your personality:
+- Warm, calm, and reassuring tone
+- Use simple, clear language
+- Be supportive and non-judgmental
+- Always recommend consulting a pediatrician for medical concerns
+
+Your expertise includes:
+- Feeding schedules (breastfeeding, formula, solids introduction)
+- Sleep routines and safe sleep practices
+- Baby development milestones
+- Vaccination schedules
+- Common baby health concerns
+- Diaper and hygiene tips
+- Growth tracking guidance
+
+Important rules:
+- Never provide medical diagnoses
+- Always suggest professional consultation for health concerns
+- Keep responses concise but helpful
+- Use emojis sparingly to be friendly 👶
+- If unsure, say so and recommend consulting a pediatrician
+"""
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -90,3 +128,88 @@ async def logout(authorization: Optional[str] = None):
         token = authorization.split(" ",1)[1]
         TOKENS.pop(token, None)
     return {"detail": "ok"}
+
+
+# ==============================
+# TinyBot Chat Endpoint
+# ==============================
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: Optional[List[ChatMessage]] = []
+
+class ChatResponse(BaseModel):
+    reply: str
+    success: bool
+
+@app.post("/api/chat/", response_model=ChatResponse)
+async def chat_with_tiny(payload: ChatRequest):
+    """
+    Chat with TinyBot using Azure OpenAI
+    """
+    if not AZURE_OPENAI_API_KEY:
+        # Fallback response if Azure not configured
+        return ChatResponse(
+            reply="I'm TinyBot! 👶 Azure OpenAI is not configured yet. Please set up your API key to enable AI responses. In the meantime, check out our FAQs and Tips sections for baby care guidance!",
+            success=False
+        )
+    
+    try:
+        # Build messages array
+        messages = [{"role": "system", "content": TINYBOT_SYSTEM_PROMPT}]
+        
+        # Add conversation history
+        for msg in payload.history[-10:]:  # Keep last 10 messages for context
+            messages.append({"role": msg.role, "content": msg.content})
+        
+        # Add current user message
+        messages.append({"role": "user", "content": payload.message})
+        
+        # Call Azure OpenAI
+        url = f"{AZURE_OPENAI_ENDPOINT}openai/deployments/{AZURE_OPENAI_DEPLOYMENT}/chat/completions?api-version={AZURE_OPENAI_API_VERSION}"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                headers={
+                    "Content-Type": "application/json",
+                    "api-key": AZURE_OPENAI_API_KEY
+                },
+                json={
+                    "messages": messages,
+                    "max_tokens": 500,
+                    "temperature": 0.7
+                }
+            )
+            
+            if response.status_code != 200:
+                print(f"Azure OpenAI Error: {response.status_code} - {response.text}")
+                return ChatResponse(
+                    reply="I'm having trouble connecting right now. Please try again in a moment! 🙏",
+                    success=False
+                )
+            
+            data = response.json()
+            reply = data["choices"][0]["message"]["content"]
+            
+            return ChatResponse(reply=reply, success=True)
+            
+    except Exception as e:
+        print(f"Chat error: {str(e)}")
+        return ChatResponse(
+            reply="Oops! Something went wrong. Please try again. If the issue persists, check out our FAQs section! 💫",
+            success=False
+        )
+
+@app.get("/api/chat/health/")
+async def chat_health():
+    """Check if Azure OpenAI is configured"""
+    return {
+        "azure_configured": bool(AZURE_OPENAI_API_KEY),
+        "endpoint": AZURE_OPENAI_ENDPOINT if AZURE_OPENAI_API_KEY else None,
+        "deployment": AZURE_OPENAI_DEPLOYMENT if AZURE_OPENAI_API_KEY else None
+    }
