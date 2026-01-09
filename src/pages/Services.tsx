@@ -10,7 +10,10 @@ import {
   Upload,
   Plus,
   Check,
-  BarChart
+  BarChart,
+  AlertTriangle,
+  Droplets,
+  Baby
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +26,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Navbar } from '@/components/Navbar';
 import DonorModal from '@/components/DonorModal';
 import SupportModal from '@/components/SupportModal';
+import { 
+  analyzeGrowth, 
+  detectGrowthDrift, 
+  generateGrowthSparkline, 
+  sparklineToAscii,
+  type Gender 
+} from '@/lib/growthStandards';
+import {
+  parseFreeTextLog,
+  generateDailySummary,
+  getTipsForAge,
+  createFeedingEntry,
+  createDiaperEntry,
+  type DailyLog,
+  type FeedingEntry,
+  type DiaperEntry,
+  type FeedType
+} from '@/lib/nutritionRules';
 
 const nearbyCategories = [
   'Crèches', 'Play schools', 'Vaccination centres', 
@@ -43,6 +64,98 @@ const Services: React.FC = () => {
     { id: 1, type: 'Vaccine', title: 'DPT-3 Vaccine', date: '2024-01-15', time: '10:30 AM', child: 'Emma', done: false },
     { id: 2, type: 'Doctor', title: 'Pediatric Checkup', date: '2024-01-20', time: '2:00 PM', child: 'Emma', done: false },
   ]);
+
+  // Growth Tracker State
+  const [babyAge, setBabyAge] = useState<number>(6);
+  const [babyWeight, setBabyWeight] = useState<string>('');
+  const [babyLength, setBabyLength] = useState<string>('');
+  const [babyGender, setBabyGender] = useState<Gender>('boy');
+  const [growthLogs, setGrowthLogs] = useState<Array<{ month: number; weight: number }>>([
+    { month: 0, weight: 3.3 },
+    { month: 2, weight: 5.2 },
+    { month: 4, weight: 6.8 },
+  ]);
+
+  // Nutrition Tracker State
+  const [freeTextInput, setFreeTextInput] = useState('');
+  const [todayLog, setTodayLog] = useState<DailyLog>({
+    date: new Date().toISOString().split('T')[0],
+    feedings: [],
+    diapers: [],
+    freeTextLogs: [],
+  });
+  const [structuredFeedType, setStructuredFeedType] = useState<FeedType>('breast');
+  const [structuredQuantity, setStructuredQuantity] = useState('');
+  const [structuredDuration, setStructuredDuration] = useState('');
+
+  // Growth Analysis
+  const latestGrowth = growthLogs.length > 0 ? growthLogs[growthLogs.length - 1] : null;
+  const growthAnalysis = latestGrowth 
+    ? analyzeGrowth(babyGender, latestGrowth.month, latestGrowth.weight, babyLength ? Number(babyLength) : undefined)
+    : null;
+  const growthDrift = detectGrowthDrift(growthLogs, babyGender);
+  const sparkline = generateGrowthSparkline(growthLogs, babyGender);
+
+  // Nutrition Summary
+  const nutritionSummary = generateDailySummary(todayLog, babyAge);
+  const nutritionTips = getTipsForAge(babyAge);
+
+  const handleAddGrowthEntry = () => {
+    if (!babyWeight) return;
+    const newEntry = { month: babyAge, weight: Number(babyWeight) };
+    setGrowthLogs(prev => [...prev, newEntry].sort((a, b) => a.month - b.month));
+    setBabyWeight('');
+    setBabyLength('');
+  };
+
+  const handleFreeTextLog = () => {
+    if (!freeTextInput.trim()) return;
+    const parsed = parseFreeTextLog(freeTextInput, babyAge);
+    
+    const newFeedings: FeedingEntry[] = parsed.feedings.map(f => ({
+      id: `${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      type: f.type || 'other',
+      quantity: f.quantity,
+      duration: f.duration,
+    }));
+
+    const newDiapers: DiaperEntry[] = parsed.diapers.map(d => ({
+      id: `${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      wet: d.wet || false,
+      stool: d.stool || false,
+    }));
+
+    setTodayLog(prev => ({
+      ...prev,
+      feedings: [...prev.feedings, ...newFeedings],
+      diapers: [...prev.diapers, ...newDiapers],
+      freeTextLogs: [...prev.freeTextLogs, freeTextInput],
+    }));
+    setFreeTextInput('');
+  };
+
+  const handleStructuredEntry = () => {
+    const entry = createFeedingEntry(structuredFeedType, {
+      quantity: structuredQuantity ? Number(structuredQuantity) : undefined,
+      duration: structuredDuration ? Number(structuredDuration) : undefined,
+    });
+    setTodayLog(prev => ({
+      ...prev,
+      feedings: [...prev.feedings, entry],
+    }));
+    setStructuredQuantity('');
+    setStructuredDuration('');
+  };
+
+  const handleAddDiaper = (wet: boolean, stool: boolean) => {
+    const entry = createDiaperEntry(wet, stool);
+    setTodayLog(prev => ({
+      ...prev,
+      diapers: [...prev.diapers, entry],
+    }));
+  };
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
@@ -285,49 +398,167 @@ const Services: React.FC = () => {
                   <Utensils className="h-5 w-5" />
                   Daily Nutrition Log
                 </CardTitle>
+                <CardDescription>
+                  Baby Age: {babyAge} months
+                  <Input 
+                    type="number" 
+                    className="w-20 inline-block ml-2" 
+                    value={babyAge} 
+                    onChange={(e) => setBabyAge(Number(e.target.value))}
+                    min={0}
+                    max={24}
+                  />
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {/* Summary Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                   <div className="bg-primary/10 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">8</p>
+                    <p className="text-2xl font-bold text-primary">{nutritionSummary.totalFeedings}</p>
                     <p className="text-sm text-muted-foreground">Feeds today</p>
                   </div>
                   <div className="bg-primary/10 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">650ml</p>
-                    <p className="text-sm text-muted-foreground">Approx. intake</p>
+                    <p className="text-2xl font-bold text-primary">{nutritionSummary.totalFormulaMl}ml</p>
+                    <p className="text-sm text-muted-foreground">Formula intake</p>
                   </div>
-                  <div className="bg-primary/10 rounded-lg p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">2h ago</p>
-                    <p className="text-sm text-muted-foreground">Last feed</p>
+                  <div className="bg-blue-100 rounded-lg p-4 text-center">
+                    <p className="text-2xl font-bold text-blue-600">{nutritionSummary.wetDiapers}</p>
+                    <p className="text-sm text-muted-foreground">Wet diapers</p>
+                  </div>
+                  <div className="bg-amber-100 rounded-lg p-4 text-center">
+                    <p className="text-2xl font-bold text-amber-600">{nutritionSummary.stoolCount}</p>
+                    <p className="text-sm text-muted-foreground">Stool count</p>
                   </div>
                 </div>
 
+                {/* Alerts */}
+                {nutritionSummary.alerts.length > 0 && (
+                  <div className="mb-6 space-y-2">
+                    {nutritionSummary.alerts.map((alert, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`p-3 rounded-lg flex items-start gap-2 ${
+                          alert.type === 'danger' ? 'bg-red-50 text-red-800' :
+                          alert.type === 'warning' ? 'bg-yellow-50 text-yellow-800' :
+                          'bg-blue-50 text-blue-800'
+                        }`}
+                      >
+                        <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">{alert.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick Free-Text Input */}
+                <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+                  <Label className="mb-2 block font-medium">Quick Log (free text)</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Example: "90ml formula, 6 wet diapers, 2 poops, breastfed 15 min"
+                  </p>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Type your log..."
+                      value={freeTextInput}
+                      onChange={(e) => setFreeTextInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleFreeTextLog()}
+                    />
+                    <Button onClick={handleFreeTextLog}>Add</Button>
+                  </div>
+                </div>
+
+                {/* Structured Entry */}
+                <div className="mb-6 p-4 border border-border rounded-lg">
+                  <Label className="mb-3 block font-medium">Structured Entry</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                    {(['breast', 'formula', 'solid', 'water'] as FeedType[]).map(type => (
+                      <Button
+                        key={type}
+                        variant={structuredFeedType === type ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setStructuredFeedType(type)}
+                      >
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    {structuredFeedType === 'breast' ? (
+                      <div>
+                        <Label className="text-xs">Duration (min)</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="15"
+                          value={structuredDuration}
+                          onChange={(e) => setStructuredDuration(e.target.value)}
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <Label className="text-xs">Quantity (ml/g)</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="90"
+                          value={structuredQuantity}
+                          onChange={(e) => setStructuredQuantity(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-end">
+                      <Button onClick={handleStructuredEntry} className="w-full">
+                        <Plus className="h-4 w-4 mr-1" /> Log Feed
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Diaper Quick Buttons */}
+                  <div className="flex gap-2 pt-3 border-t border-border">
+                    <Button variant="outline" size="sm" onClick={() => handleAddDiaper(true, false)}>
+                      <Droplets className="h-4 w-4 mr-1" /> Wet Diaper
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleAddDiaper(false, true)}>
+                      <Baby className="h-4 w-4 mr-1" /> Stool
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleAddDiaper(true, true)}>
+                      Both
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Today's Log */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                    <div>
-                      <p className="font-medium">Breastfeeding</p>
-                      <p className="text-sm text-muted-foreground">15 min • 2:30 PM</p>
-                    </div>
-                    <Button size="sm" variant="outline">Edit</Button>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                    <div>
-                      <p className="font-medium">Formula</p>
-                      <p className="text-sm text-muted-foreground">120ml • 11:00 AM</p>
-                    </div>
-                    <Button size="sm" variant="outline">Edit</Button>
-                  </div>
-                  <Button variant="outline" className="w-full">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Log New Feed
-                  </Button>
+                  <h4 className="font-medium">Today's Entries</h4>
+                  {todayLog.feedings.length === 0 && todayLog.diapers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No entries yet. Start logging above!</p>
+                  ) : (
+                    <>
+                      {todayLog.feedings.map((f, idx) => (
+                        <div key={f.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                          <div>
+                            <p className="font-medium capitalize">{f.type}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {f.duration ? `${f.duration} min` : f.quantity ? `${f.quantity}ml` : ''} • {f.timestamp.toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-border">
-                  <Button className="w-full bg-gradient-primary hover:opacity-90">
-                    Open Child Dashboard
-                  </Button>
-                </div>
+                {/* Nutrition Tips */}
+                {nutritionTips.length > 0 && (
+                  <div className="mt-6 pt-4 border-t border-border">
+                    <h4 className="font-medium mb-3">Tips for {babyAge} month old</h4>
+                    <div className="space-y-2">
+                      {nutritionTips.slice(0, 2).map((tip, idx) => (
+                        <div key={idx} className="p-3 bg-green-50 rounded-lg text-sm text-green-800">
+                          💡 {tip.tip}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
