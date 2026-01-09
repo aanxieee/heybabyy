@@ -144,10 +144,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
                 <Link
                   key={item.id}
                   to={item.route}
-                  onClick={() => {
-                    if (onNavClick) onNavClick(item.id);
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => handleNavClick(item.id)}
                   className={cn(
                     "w-full flex items-center justify-between p-3 rounded-lg transition-colors text-left",
                     activeSection === item.id
