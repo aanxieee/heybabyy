@@ -189,7 +189,7 @@ async def chat_with_tiny(payload: ChatRequest):
             if response.status_code != 200:
                 print(f"Azure OpenAI Error: {response.status_code} - {response.text}")
                 return ChatResponse(
-                    reply="I'm having trouble connecting right now. Please try again in a moment! 🙏",
+                    reply=f"Azure Error {response.status_code}: {response.text[:200]}",
                     success=False
                 )
             
@@ -201,7 +201,7 @@ async def chat_with_tiny(payload: ChatRequest):
     except Exception as e:
         print(f"Chat error: {str(e)}")
         return ChatResponse(
-            reply="Oops! Something went wrong. Please try again. If the issue persists, check out our FAQs section! 💫",
+            reply=f"Error: {str(e)}. Endpoint: {AZURE_OPENAI_ENDPOINT}, Deployment: {AZURE_OPENAI_DEPLOYMENT}",
             success=False
         )
 
