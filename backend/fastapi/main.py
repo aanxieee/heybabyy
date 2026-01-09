@@ -2,9 +2,27 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
+from contextlib import asynccontextmanager
 import time
 
-app = FastAPI(title="HeyBabyy Auth API (FastAPI skeleton)")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    print("=" * 60)
+    print("🎉 HeyBabyy Backend Started!")
+    print("=" * 60)
+    print("Demo Credentials:")
+    print("  📧 Email: 9876543210@demo.com")
+    print("  🔑 Password: demo123")
+    print("  📱 Mobile: 9876543210")
+    print("  🔢 OTP: 123456")
+    print("=" * 60)
+    print(f"📍 API Docs: http://localhost:8000/docs")
+    print("=" * 60)
+    yield
+    # Shutdown (if needed)
+
+app = FastAPI(title="HeyBabyy Auth API (FastAPI skeleton)", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -15,7 +33,14 @@ app.add_middleware(
 )
 
 # In-memory demo store (replace with DB)
-USERS = {}
+USERS = {
+    "9876543210@demo.com": {
+        "id": "demo-user-1",
+        "email": "9876543210@demo.com",
+        "full_name": "Demo User",
+        "password": "demo123"  # WARNING: demo only, hash in real apps
+    }
+}
 TOKENS = {}
 
 class LoginRequest(BaseModel):

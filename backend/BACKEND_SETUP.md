@@ -43,6 +43,15 @@
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
+#### Demo User Pre-populated
+The FastAPI backend comes with a pre-registered demo user:
+- Email: `9876543210@demo.com`
+- Password: `demo123`
+- Mobile: `9876543210`
+- OTP: `123456`
+
+You can use these credentials immediately without registration.
+
 6. **Update `.env.local` in project root:**
    ```env
    # VITE_DEMO_AUTH=true  # Comment this out
