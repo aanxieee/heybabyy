@@ -27,11 +27,11 @@ const MainDashboard = ({ selectedLanguage }: MainDashboardProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const protectedNavItems = ['products', 'services'];
+  const protectedNavItems: string[] = [];
 
   const navItems = [
-    { id: 'products', label: t('products'), icon: Heart, protected: true },
-    { id: 'services', label: t('services'), icon: Baby, protected: true },
+    { id: 'products', label: t('products'), icon: Heart, protected: false },
+    { id: 'services', label: t('services'), icon: Baby, protected: false },
     { id: 'support', label: t('support'), icon: BookOpen, protected: false },
     { id: 'insights', label: t('insights'), icon: BarChart3, protected: false },
     { id: 'about', label: t('aboutUs'), icon: User, protected: false },
