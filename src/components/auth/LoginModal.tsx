@@ -40,9 +40,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitc
       onClose();
       resetForm();
     } else {
+      console.error('Demo login error:', error);
       toast({
-        title: "Error",
-        description: "Demo login failed. Please try again.",
+        title: "Demo Login Failed",
+        description: error?.message || "Please make sure the backend is running or enable VITE_DEMO_AUTH=true in .env.local",
         variant: "destructive",
       });
     }
@@ -73,9 +74,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSwitc
       onClose();
       resetForm();
     } else {
+      console.error('Login error:', error);
       toast({
-        title: "Error",
-        description: "Login failed. Please try again.",
+        title: "Login Failed",
+        description: error?.message || "Please make sure the backend is running or enable VITE_DEMO_AUTH=true in .env.local",
         variant: "destructive",
       });
     }

@@ -40,7 +40,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       else setUser(await AuthApi.me() as any);
       return { error: null };
     } catch (e: any) {
-      return { error: e };
+      console.error('Login error:', e);
+      const errorMessage = e.message || 'Login failed';
+      return { error: { message: errorMessage } };
     }
   };
 
