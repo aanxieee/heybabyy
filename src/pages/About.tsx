@@ -6,9 +6,9 @@ import { Navbar } from '@/components/Navbar';
 
 const founders = [
   {
-    name: 'Aanya Mittal',
+    name: 'Aanya Mittal | Divyam Kataria |Pavan Simhadri',
     role: 'Initiative Lead',
-    bio: 'Hackathon project under GE Healthcare — Precision Care. Turning this into a product soon.',
+    bio: 'Turning this into a product soon.',
     image: '/placeholder.svg'
   }
 ];
@@ -38,8 +38,8 @@ export const About: React.FC = () => {
             Initiative by <span className="font-semibold text-foreground">Aanya Mittal</span>
           </p>
           <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
-            <Badge variant="secondary">Hackathon Project</Badge>
-            <Badge variant="outline">GE Healthcare — Precision Care</Badge>
+            <Badge variant="secondary">Initiative for new parents </Badge>
+            <Badge variant="outline">Team heybabyy</Badge>
             <Badge>Turning into a product soon</Badge>
           </div>
         </div>
