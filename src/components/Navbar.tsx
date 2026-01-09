@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Lock, ChevronDown } from 'lucide-react';
+import { Menu, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/ApiAuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -27,8 +27,6 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
   const { currentLanguage, t } = useLanguage();
   const { toast } = useToast();
 
-  const protectedSections = ['products', 'services', 'insights', 'support'];
-
   const navItems = [
     { id: 'products', label: 'Products', hasDropdown: true, route: '/products' },
     { id: 'services', label: 'Services', route: '/services' },
@@ -40,16 +38,6 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
   ];
 
   const handleNavClick = (sectionId: string) => {
-    if (protectedSections.includes(sectionId) && !isAuthenticated) {
-      setShowLoginModal(true);
-      toast({
-        title: 'Login Required',
-        description: `Please login to access ${sectionId}`,
-        variant: 'destructive'
-      });
-      return;
-    }
-    
     if (onNavClick) {
       onNavClick(sectionId);
     }
@@ -93,56 +81,32 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
                 <div key={item.id} className="relative">
                   {item.hasDropdown ? (
                     <div className="relative">
-                      {protectedSections.includes(item.id) && !isAuthenticated ? (
-                        <button
-                          onClick={() => setShowLoginModal(true)}
-                          className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-foreground hover:bg-muted"
+                      <Link
+                        to={item.route}
+                        onMouseEnter={() => setShowProductsDropdown(true)}
+                        onMouseLeave={() => setShowProductsDropdown(false)}
+                        className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-foreground hover:bg-muted"
+                      >
+                        <span>{item.label}</span>
+                        <ChevronDown className="h-3 w-3" />
+                      </Link>
+                      
+                      {showProductsDropdown && (
+                        <div
+                          onMouseEnter={() => setShowProductsDropdown(true)}
+                          onMouseLeave={() => setShowProductsDropdown(false)}
                         >
-                          <span>{item.label}</span>
-                          <Lock className="h-3 w-3 text-muted-foreground" />
-                        </button>
-                      ) : (
-                        <>
-                          <Link
-                            to={item.route}
-                            onMouseEnter={() => setShowProductsDropdown(true)}
-                            onMouseLeave={() => setShowProductsDropdown(false)}
-                            className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-foreground hover:bg-muted"
-                          >
-                            <span>{item.label}</span>
-                            <ChevronDown className="h-3 w-3" />
-                          </Link>
-                          
-                          {showProductsDropdown && (
-                            <div
-                              onMouseEnter={() => setShowProductsDropdown(true)}
-                              onMouseLeave={() => setShowProductsDropdown(false)}
-                            >
-                              <ProductsDropdown />
-                            </div>
-                          )}
-                        </>
+                          <ProductsDropdown />
+                        </div>
                       )}
                     </div>
                   ) : (
-                    <>
-                      {protectedSections.includes(item.id) && !isAuthenticated ? (
-                        <button
-                          onClick={() => setShowLoginModal(true)}
-                          className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-foreground hover:bg-muted"
-                        >
-                          <span>{item.label}</span>
-                          <Lock className="h-3 w-3 text-muted-foreground" />
-                        </button>
-                      ) : (
-                        <Link
-                          to={item.route}
-                          className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-foreground hover:bg-muted"
-                        >
-                          <span>{item.label}</span>
-                        </Link>
-                      )}
-                    </>
+                    <Link
+                      to={item.route}
+                      className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 text-foreground hover:bg-muted"
+                    >
+                      <span>{item.label}</span>
+                    </Link>
                   )}
                 </div>
               ))}
@@ -177,9 +141,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
           <div className="md:hidden border-t border-border bg-white/95 backdrop-blur-md">
             <div className="px-4 py-4 space-y-2">
               {navItems.map((item) => (
-                <button
+                <Link
                   key={item.id}
-                  onClick={() => handleNavClick(item.id)}
+                  to={item.route}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     "w-full flex items-center justify-between p-3 rounded-lg transition-colors text-left",
                     activeSection === item.id
@@ -188,10 +153,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
                   )}
                 >
                   <span>{item.label}</span>
-                  {protectedSections.includes(item.id) && !isAuthenticated && (
-                    <Lock className="h-4 w-4" />
-                  )}
-                </button>
+                </Link>
               ))}
             </div>
           </div>
