@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Menu, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/ApiAuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { RegisterModal } from '@/components/auth/RegisterModal';
 import ProductsDropdown from '@/components/ProductsDropdown';
@@ -19,12 +18,10 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [showProductsDropdown, setShowProductsDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const { isAuthenticated, signOut } = useAuth();
-  const { currentLanguage, t } = useLanguage();
   const { toast } = useToast();
 
   const navItems = [
@@ -36,13 +33,6 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavClick }) => {
     { id: 'mental-health', label: 'Mental Health', route: '/support#mental-health' },
     { id: 'about', label: 'About Us', route: '/about' }
   ];
-
-  const handleNavClick = (sectionId: string) => {
-    if (onNavClick) {
-      onNavClick(sectionId);
-    }
-    setMobileMenuOpen(false);
-  };
 
   const handleLogout = async () => {
     await signOut();
