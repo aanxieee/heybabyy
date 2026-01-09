@@ -2,9 +2,27 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
+from contextlib import asynccontextmanager
 import time
 
-app = FastAPI(title="HeyBabyy Auth API (FastAPI skeleton)")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    print("=" * 60)
+    print("🎉 HeyBabyy Backend Started!")
+    print("=" * 60)
+    print("Demo Credentials:")
+    print("  📧 Email: 9876543210@demo.com")
+    print("  🔑 Password: demo123")
+    print("  📱 Mobile: 9876543210")
+    print("  🔢 OTP: 123456")
+    print("=" * 60)
+    print(f"📍 API Docs: http://localhost:8000/docs")
+    print("=" * 60)
+    yield
+    # Shutdown (if needed)
+
+app = FastAPI(title="HeyBabyy Auth API (FastAPI skeleton)", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,20 +51,6 @@ class RegisterRequest(BaseModel):
     email: str
     password: str
     full_name: Optional[str] = None
-
-@app.on_event("startup")
-async def startup_event():
-    print("=" * 60)
-    print("🎉 HeyBabyy Backend Started!")
-    print("=" * 60)
-    print("Demo Credentials:")
-    print("  📧 Email: 9876543210@demo.com")
-    print("  🔑 Password: demo123")
-    print("  📱 Mobile: 9876543210")
-    print("  🔢 OTP: 123456")
-    print("=" * 60)
-    print(f"📍 API Docs: http://localhost:8000/docs")
-    print("=" * 60)
 
 @app.post("/api/auth/register/")
 async def register(payload: RegisterRequest):
